@@ -120,7 +120,6 @@ class WorldSocket : public WorldHandler
         /// Return the session key
         BigNumber& GetSessionKey() { return m_s; }
 
-    protected:
         /// things called by ACE framework.
 
         /// Called on open , the void* is the acceptor.
