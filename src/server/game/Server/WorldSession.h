@@ -216,7 +216,7 @@ class WorldSession
 {
     friend class WardenMgr;
     public:
-        WorldSession(uint32 id, WorldSocket *sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter);
+        WorldSession(uint32 id, WorldSocket *sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter, bool isARecruiter);
         ~WorldSession();
 
         bool PlayerLoading() const { return m_playerLoading; }
@@ -392,6 +392,7 @@ class WorldSession
 
         // Recruit-A-Friend Handling
         uint32 GetRecruiterId() { return recruiterId; }
+        bool IsARecruiter() { return isRecruiter; }
 
         uint8 *GetWardenServerKey() { return &m_rc4ServerKey[0]; }
         uint8 *GetWardenSeed() { return &m_wardenSeed[0]; }
@@ -869,6 +870,10 @@ class WorldSession
         void HandleQueryGuildBankTabText(WorldPacket& recv_data);
         void HandleSetGuildBankTabText(WorldPacket& recv_data);
 
+        // Refer-a-Friend
+        void HandleGrantLevel(WorldPacket& recv_data);
+        void HandleAcceptGrantLevel(WorldPacket& recv_data);
+
         // Calendar
         void HandleCalendarGetCalendar(WorldPacket& recv_data);
         void HandleCalendarGetEvent(WorldPacket& recv_data);
@@ -960,6 +965,7 @@ class WorldSession
         bool   m_TutorialsChanged;
         AddonsList m_addonsList;
         uint32 recruiterId;
+        bool isRecruiter;
         ACE_Based::LockedQueue<WorldPacket*, ACE_Thread_Mutex> _recvQueue;
 
         uint8 m_wardenStatus;

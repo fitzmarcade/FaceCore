@@ -1,8 +1,11 @@
 # output generic information about the core and buildtype chosen
 
-message("* FaceCore(wa) revision   : ${rev_id_str} (${rev_hash_str})")
+message("")
+message("* FaceCore(wa) rev. hash  : ${rev_hash}")
+message("* FaceCore(wa) rev. date  : ${rev_date}")
+
 if( UNIX )
-  message("* Build binaries in      : ${CMAKE_BUILD_TYPE} mode")
+  message("* FaceCore(wa) buildtype  : ${CMAKE_BUILD_TYPE}")
 endif()
 message("")
 
