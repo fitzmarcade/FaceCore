@@ -1744,15 +1744,8 @@ void WorldSession::HandleSetSavedInstanceExtend(WorldPacket & recv_data)
 
         if (InstancePlayerBind* instance = player->GetBoundInstance(map_id, Difficulty(difficulty)))
         {
-            MapDifficulty const* mapDiff = GetMapDifficultyData(map_id, Difficulty(difficulty));
-            if (!mapDiff || !mapDiff->resetTime)
-            {
-                sLog->outError("HandleSetSavedInstanceExtend: not valid difficulty or no reset delay for map %d", map_id);
-                return;
-            }
-
             player->UnbindInstance(map_id, Difficulty(difficulty));
-            player->BindToInstance(instance->save, instance->perm, false, true);
+            player->BindToInstance(instance->save, instance->perm, false, extend == 1 ? true : false);
         }
     }
 }
