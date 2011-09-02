@@ -1727,3 +1727,29 @@ void WorldSession::HandleInstanceLockResponse(WorldPacket& recvPacket)
 
     _player->SetPendingBind(NULL, 0);
 }
+
+void WorldSession::HandleSetSavedInstanceExtend(WorldPacket & recv_data)
+{
+    uint32 map_id = 0;
+    uint32 difficulty = 0;
+    uint8 extend = 0;
+    
+    recv_data >> map_id;
+    recv_data >> difficulty;
+    recv_data >> extend;
+
+    if (Player* player = GetPlayer())
+    {
+        sLog->outBasic("HandleSetSavedInstanceExtend: player = %u, map_id = %u, difficulty = %u, extend = %u", player->GetGUID(), map_id, difficulty, extend);
+
+        if (InstancePlayerBind* instance = player->GetBoundInstance(map_id, Difficulty(difficulty)))
+        {
+            MapDifficulty const* mapDiff = GetMapDifficultyData(map_id, Difficulty(difficulty));
+            if (!mapDiff || !mapDiff->resetTime)
+            {
+                sLog->outError("HandleSetSavedInstanceExtend: not valid difficulty or no reset delay for map %d", map_id);
+                return;
+            }
+        }
+    }
+}
