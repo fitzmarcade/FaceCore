@@ -18080,12 +18080,12 @@ void Player::SendRaidInfo()
             if (itr->second.perm)
             {
                 InstanceSave *save = itr->second.save;
-                data << uint32(save->GetMapId());           // map id
-                data << uint32(save->GetDifficulty());      // difficulty
-                data << uint64(save->GetInstanceId());      // instance id
-                data << uint8(1);                           // expired = 0
-                data << uint8(itr->second.extend ? 1 : 0);  // extended
-                data << uint32(save->GetResetTime() - now); // reset time
+                data << uint32(save->GetMapId());                                            // map id
+                data << uint32(save->GetDifficulty());                                       // difficulty
+                data << uint64(save->GetInstanceId());                                       // instance id
+                data << uint8(save->GetResetTime() > now ? 1 : 0);                           // expired
+                data << uint8(itr->second.extend ? 1 : 0);                                   // extended
+                data << uint32(save->GetResetTime() > now ? save->GetResetTime() - now : 0); // reset time
                 ++counter;
             }
         }
