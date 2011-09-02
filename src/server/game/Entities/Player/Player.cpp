@@ -17917,7 +17917,7 @@ void Player::_LoadBoundInstances(PreparedQueryResult result)
 
     Group* group = GetGroup();
 
-    //QueryResult *result = CharacterDatabase.PQuery("SELECT id, permanent, map, difficulty, resettime FROM character_instance LEFT JOIN instance ON instance = id WHERE guid = '%u'", GUID_LOPART(m_guid));
+    //QueryResult *result = CharacterDatabase.PQuery("SELECT id, permanent, map, extend, difficulty, resettime FROM character_instance LEFT JOIN instance ON instance = id WHERE guid = '%u'", GUID_LOPART(m_guid));
     if (result)
     {
         do
@@ -17925,11 +17925,12 @@ void Player::_LoadBoundInstances(PreparedQueryResult result)
             Field* fields = result->Fetch();
 
             bool perm = fields[1].GetBool();
-            uint32 mapId = fields[2].GetUInt16();
+            bool extend = fields[2].GetBool();
+            uint32 mapId = fields[3].GetUInt16();
             uint32 instanceId = fields[0].GetUInt32();
-            uint8 difficulty = fields[3].GetUInt8();
+            uint8 difficulty = fields[4].GetUInt8();
 
-            time_t resetTime = time_t(fields[4].GetUInt32());
+            time_t resetTime = time_t(fields[5].GetUInt32());
             // the resettime for normal instances is only saved when the InstanceSave is unloaded
             // so the value read from the DB may be wrong here but only if the InstanceSave is loaded
             // and in that case it is not used
@@ -17966,7 +17967,7 @@ void Player::_LoadBoundInstances(PreparedQueryResult result)
 
             // since non permanent binds are always solo bind, they can always be reset
             if (InstanceSave *save = sInstanceSaveMgr->AddInstanceSave(mapId, instanceId, Difficulty(difficulty), resetTime, !perm, true))
-               BindToInstance(save, perm, true);
+               BindToInstance(save, perm, true, extend);
         }
         while (result->NextRow());
     }
@@ -18015,7 +18016,7 @@ void Player::UnbindInstance(BoundInstancesMap::iterator &itr, Difficulty difficu
     }
 }
 
-InstancePlayerBind* Player::BindToInstance(InstanceSave *save, bool permanent, bool load)
+InstancePlayerBind* Player::BindToInstance(InstanceSave *save, bool permanent, bool load, bool extend)
 {
     if (save)
     {
@@ -18023,13 +18024,13 @@ InstancePlayerBind* Player::BindToInstance(InstanceSave *save, bool permanent, b
         if (bind.save)
         {
             // update the save when the group kills a boss
-            if (permanent != bind.perm || save != bind.save)
+            if (permanent != bind.perm || save != bind.save || extend != bind.extend)
                 if (!load)
-                    CharacterDatabase.PExecute("UPDATE character_instance SET instance = '%u', permanent = '%u' WHERE guid = '%u' AND instance = '%u'", save->GetInstanceId(), permanent, GetGUIDLow(), bind.save->GetInstanceId());
+                    CharacterDatabase.PExecute("UPDATE character_instance SET instance = '%u', permanent = '%u', extend = '%u' WHERE guid = '%u' AND instance = '%u'", save->GetInstanceId(), permanent, extend, GetGUIDLow(), bind.save->GetInstanceId());
         }
         else
             if (!load)
-                CharacterDatabase.PExecute("INSERT INTO character_instance (guid, instance, permanent) VALUES ('%u', '%u', '%u')", GetGUIDLow(), save->GetInstanceId(), permanent);
+                CharacterDatabase.PExecute("INSERT INTO character_instance (guid, instance, permanent, extend) VALUES ('%u', '%u', '%u', '%u')", GetGUIDLow(), save->GetInstanceId(), permanent, extend);
 
         if (bind.save != save)
         {
@@ -18043,9 +18044,10 @@ InstancePlayerBind* Player::BindToInstance(InstanceSave *save, bool permanent, b
 
         bind.save = save;
         bind.perm = permanent;
+        bind.extend = extend;
         if (!load)
             sLog->outDebug(LOG_FILTER_MAPS, "Player::BindToInstance: %s(%d) is now bound to map %d, instance %d, difficulty %d", GetName(), GetGUIDLow(), save->GetMapId(), save->GetInstanceId(), save->GetDifficulty());
-        sScriptMgr->OnPlayerBindToInstance(this, save->GetDifficulty(), save->GetMapId(), permanent);
+        sScriptMgr->OnPlayerBindToInstance(this, save->GetDifficulty(), save->GetMapId(), permanent, extend);
         return &bind;
     }
     else
@@ -18082,7 +18084,7 @@ void Player::SendRaidInfo()
                 data << uint32(save->GetDifficulty());      // difficulty
                 data << uint64(save->GetInstanceId());      // instance id
                 data << uint8(1);                           // expired = 0
-                data << uint8(0);                           // extended = 1
+                data << uint8(itr->second.extend ? 1 : 0);  // extended
                 data << uint32(save->GetResetTime() - now); // reset time
                 ++counter;
             }
