@@ -18080,12 +18080,27 @@ void Player::SendRaidInfo()
             if (itr->second.perm)
             {
                 InstanceSave *save = itr->second.save;
+                
+                time_t resettime = save->GetResetTime();
+                if (itr->second.extend)
+                {
+                    MapDifficulty const* mapDiff = GetMapDifficultyData(save->GetMapId(), save->GetDifficulty());
+                    if (mapDiff && !mapDiff->resetTime)
+                    {
+                        uint64 period = uint64(((mapDiff->resetTime * sWorld->getRate(RATE_INSTANCE_RESET_TIME))/DAY) * DAY);
+                        if (period < DAY)
+                            period = DAY;
+
+                        resettime += period;
+                    }
+                }
+
                 data << uint32(save->GetMapId());                                            // map id
                 data << uint32(save->GetDifficulty());                                       // difficulty
                 data << uint64(save->GetInstanceId());                                       // instance id
                 data << uint8(save->GetResetTime() > now ? 1 : 0);                           // expired
                 data << uint8(itr->second.extend ? 1 : 0);                                   // extended
-                data << uint32(save->GetResetTime() > now ? save->GetResetTime() - now : 0); // reset time
+                data << uint32(resettime > now ? resettime - now : 0);                       // reset time
                 ++counter;
             }
         }

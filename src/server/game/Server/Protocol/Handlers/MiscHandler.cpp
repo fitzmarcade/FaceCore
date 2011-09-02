@@ -1750,6 +1750,9 @@ void WorldSession::HandleSetSavedInstanceExtend(WorldPacket & recv_data)
                 sLog->outError("HandleSetSavedInstanceExtend: not valid difficulty or no reset delay for map %d", map_id);
                 return;
             }
+
+            player->UnbindInstance(map_id, Difficulty(difficulty));
+            player->BindToInstance(instance->save, instance->perm, false, true);
         }
     }
 }
