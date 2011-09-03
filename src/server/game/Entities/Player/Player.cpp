@@ -18085,7 +18085,7 @@ void Player::SendRaidInfo()
                 if (itr->second.extend)
                 {
                     MapDifficulty const* mapDiff = GetMapDifficultyData(save->GetMapId(), save->GetDifficulty());
-                    if (mapDiff && !mapDiff->resetTime)
+                    if (mapDiff && mapDiff->resetTime)
                     {
                         uint64 period = uint64(((mapDiff->resetTime * sWorld->getRate(RATE_INSTANCE_RESET_TIME))/DAY) * DAY);
                         if (period < DAY)

@@ -1740,11 +1740,10 @@ void WorldSession::HandleSetSavedInstanceExtend(WorldPacket & recv_data)
 
     if (Player* player = GetPlayer())
     {
-        sLog->outBasic("HandleSetSavedInstanceExtend: player = %u, map_id = %u, difficulty = %u, extend = %u", player->GetGUID(), map_id, difficulty, extend);
+        sLog->outDebug(LOG_FILTER_MAPS, "HandleSetSavedInstanceExtend: player = %u, map_id = %u, difficulty = %u, extend = %u", player->GetGUID(), map_id, difficulty, extend);
 
         if (InstancePlayerBind* instance = player->GetBoundInstance(map_id, Difficulty(difficulty)))
         {
-            player->UnbindInstance(map_id, Difficulty(difficulty));
             player->BindToInstance(instance->save, instance->perm, false, extend == 1 ? true : false);
         }
     }
