@@ -2300,6 +2300,7 @@ bool InstanceMap::Add(Player* player)
 
             // get or create an instance save for the map
             InstanceSave *mapSave = sInstanceSaveMgr->GetInstanceSave(GetInstanceId());
+            
             if (!mapSave)
             {
                 sLog->outDetail("InstanceMap::Add: creating instance save for map %d spawnmode %d with instance id %d", GetId(), GetSpawnMode(), GetInstanceId());
@@ -2311,7 +2312,7 @@ bool InstanceMap::Add(Player* player)
             if (playerBind && playerBind->perm)
             {
                 // cannot enter other instances if bound permanently
-                if (playerBind->save != mapSave)
+                if (playerBind->save != mapSave && !playerBind->save->isExpired())
                 {
                     sLog->outError("InstanceMap::Add: player %s(%d) is permanently bound to instance %d, %d, %d, %d, %d, %d but he is being put into instance %d, %d, %d, %d, %d, %d", player->GetName(), player->GetGUIDLow(), playerBind->save->GetMapId(), playerBind->save->GetInstanceId(), playerBind->save->GetDifficulty(), playerBind->save->GetPlayerCount(), playerBind->save->GetGroupCount(), playerBind->save->CanReset(), mapSave->GetMapId(), mapSave->GetInstanceId(), mapSave->GetDifficulty(), mapSave->GetPlayerCount(), mapSave->GetGroupCount(), mapSave->CanReset());
                     return false;
