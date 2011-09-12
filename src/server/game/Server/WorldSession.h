@@ -947,6 +947,8 @@ class WorldSession
         // Warden
         Warden* _warden;                                    // Remains NULL if Warden system is not enabled by config
 
+        typedef std::list<AddonInfo> AddonsList;
+
         time_t _logoutTime;
         bool m_inQueue;                                     // session wait in auth.queue
         bool m_playerLoading;                               // code processed in LoginPlayer
