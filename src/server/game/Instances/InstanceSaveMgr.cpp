@@ -214,15 +214,12 @@ time_t InstanceSave::GetDefaultResetTime()
 time_t InstanceSave::GetNextResetTime()
 {
     uint64 period = 0;
-    if (!isExpired())
+    MapDifficulty const* mapDiff = GetMapDifficultyData(m_mapid, m_difficulty);
+    if (mapDiff && mapDiff->resetTime)
     {
-        MapDifficulty const* mapDiff = GetMapDifficultyData(m_mapid, m_difficulty);
-        if (mapDiff && mapDiff->resetTime)
-        {
-            period = uint64(((mapDiff->resetTime * sWorld->getRate(RATE_INSTANCE_RESET_TIME))/DAY) * DAY);
-            if (period < DAY)
-                period = DAY;
-        }
+        period = uint64(((mapDiff->resetTime * sWorld->getRate(RATE_INSTANCE_RESET_TIME))/DAY) * DAY);
+        if (period < DAY)
+            period = DAY;
     }
 
     return GetDefaultResetTime() + period;

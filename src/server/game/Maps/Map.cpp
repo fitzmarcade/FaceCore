@@ -2309,10 +2309,10 @@ bool InstanceMap::Add(Player* player)
 
             // check for existing instance binds
             InstancePlayerBind *playerBind = player->GetBoundInstance(GetId(), Difficulty(GetSpawnMode()));
-            if (playerBind && playerBind->perm && (!playerBind->save->isExpired() || playerBind->extend))
+            if (playerBind && playerBind->perm && !playerBind->isExpired())
             {
                 // cannot enter other instances if bound permanently
-                if (playerBind->save != mapSave && !playerBind->save->isExpired())
+                if (playerBind->save != mapSave)
                 {
                     sLog->outError("InstanceMap::Add: player %s(%d) is permanently bound to instance %d, %d, %d, %d, %d, %d but he is being put into instance %d, %d, %d, %d, %d, %d", player->GetName(), player->GetGUIDLow(), playerBind->save->GetMapId(), playerBind->save->GetInstanceId(), playerBind->save->GetDifficulty(), playerBind->save->GetPlayerCount(), playerBind->save->GetGroupCount(), playerBind->save->CanReset(), mapSave->GetMapId(), mapSave->GetInstanceId(), mapSave->GetDifficulty(), mapSave->GetPlayerCount(), mapSave->GetGroupCount(), mapSave->CanReset());
                     return false;
@@ -2371,7 +2371,7 @@ bool InstanceMap::Add(Player* player)
                         player->BindToInstance(mapSave, false);
                     else
                         // cannot jump to a different instance without resetting it
-                        ASSERT(playerBind->save == mapSave || (playerBind->save->isExpired() && !playerBind->extend));
+                        ASSERT(playerBind->save == mapSave || playerBind->isExpired());
                 }
             }
         }
@@ -2509,7 +2509,7 @@ void InstanceMap::PermBindAllPlayers(Player* player)
         // players inside an instance cannot be bound to other instances
         // some players may already be permanently bound, in this case nothing happens
         InstancePlayerBind *bind = plr->GetBoundInstance(save->GetMapId(), save->GetDifficulty());
-        if (!bind || !bind->perm || (bind->save->isExpired() && !bind->extend))
+        if (!bind || !bind->perm || bind->isExpired())
         {
             plr->BindToInstance(save, true);
             WorldPacket data(SMSG_INSTANCE_SAVE_CREATED, 4);
@@ -2517,8 +2517,8 @@ void InstanceMap::PermBindAllPlayers(Player* player)
             plr->GetSession()->SendPacket(&data);
         }
 
-        if (bind && bind ->extend == 1)
-            plr->BindToInstance(save, true, false, 2);
+        if (bind && bind->isExtended() && !bind->isLock())
+            plr->BindToInstance(save, true, false, INSTANCE_EXTEND_LOCK);
 
         // if the leader is not in the instance the group will not get a perm bind
         if (group && group->GetLeaderGUID() == plr->GetGUID())

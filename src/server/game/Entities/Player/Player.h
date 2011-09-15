@@ -43,6 +43,8 @@
 #include<string>
 #include<vector>
 
+#include "InstanceSaveMgr.h"
+
 struct Mail;
 class Channel;
 class Creature;
@@ -843,6 +845,9 @@ enum PlayerDelayedOperations
 #define MAX_PLAYER_SUMMON_DELAY                   (2*MINUTE)
 #define MAX_MONEY_AMOUNT                       (0x7FFFFFFF-1)
 
+#define INSTANCE_EXTEND_EXTEND              1
+#define INSTANCE_EXTEND_LOCK                2
+
 struct InstancePlayerBind
 {
     InstanceSave *save;
@@ -851,6 +856,10 @@ struct InstancePlayerBind
        that aren't already permanently bound when they are inside when a boss is killed
        or when they enter an instance that the group leader is permanently bound to. */
     uint8 extend;
+    bool isExtended() const { return extend & INSTANCE_EXTEND_EXTEND; }
+    bool isLock() const { return extend & INSTANCE_EXTEND_LOCK; }
+    bool isExpired() const { return save && (save->GetResetTime() < time(NULL) && !isExtended() && !isLock()); }
+
     InstancePlayerBind() : save(NULL), perm(false), extend(0) {}
 };
 

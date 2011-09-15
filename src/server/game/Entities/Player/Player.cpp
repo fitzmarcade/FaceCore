@@ -18021,7 +18021,7 @@ InstancePlayerBind* Player::BindToInstance(InstanceSave *save, bool permanent, b
     if (save)
     {
         InstancePlayerBind& bind = m_boundInstances[save->GetDifficulty()][save->GetMapId()];
-        if (bind.save && (!bind.save->isExpired() || save == bind.save))
+        if (bind.save)
         {
             // update the save when the group kills a boss
             if (permanent != bind.perm || save != bind.save || extend != bind.extend)
@@ -18030,11 +18030,7 @@ InstancePlayerBind* Player::BindToInstance(InstanceSave *save, bool permanent, b
         }
         else
             if (!load)
-            {
-                if (bind.save && save != bind.save)
-                    CharacterDatabase.PExecute("DELETE FROM character_instance WHERE instance = '%u'", bind.save->GetInstanceId());
                 CharacterDatabase.PExecute("INSERT INTO character_instance (guid, instance, permanent, extend) VALUES ('%u', '%u', '%u', '%u')", GetGUIDLow(), save->GetInstanceId(), permanent, extend);
-            }
 
         if (bind.save != save)
         {
@@ -18085,15 +18081,13 @@ void Player::SendRaidInfo()
             {
                 InstanceSave *save = itr->second.save;
                 
-                time_t resettime = save->isExpired() ? 
-                    (itr->second.extend ? save->GetNextResetTime() - now : 0) :
-                    (itr->second.extend ? save->GetNextResetTime() - now : save->GetDefaultResetTime() - now);
+                time_t resettime = itr->second.isExtended() && (itr->second.isLock() || !save->isExpired()) ? save->GetNextResetTime() - now : save->GetDefaultResetTime() - now;
 
                 data << uint32(save->GetMapId());                                            // map id
                 data << uint32(save->GetDifficulty());                                       // difficulty
                 data << uint64(save->GetInstanceId());                                       // instance id
-                data << uint8(!save->isExpired() || itr->second.extend == 2 ? 1 : 0);        // expired
-                data << uint8(itr->second.extend == 1 ? 1 : 0);                              // extended
+                data << uint8(itr->second.isExpired() ? 0 : 1);                              // expired
+                data << uint8(itr->second.isExtended() ? 1 : 0);                             // extended
                 data << uint32(resettime);                                                   // reset time
                 ++counter;
             }

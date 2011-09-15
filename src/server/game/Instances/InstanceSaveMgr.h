@@ -79,12 +79,6 @@ class InstanceSave
         time_t GetDefaultResetTime();
         time_t GetNextResetTime();
         bool isExpired() {return time(NULL) > m_resetTime; }
-        bool isExtend(Player* player)
-        {
-            if (InstancePlayerBind* instance = player->GetBoundInstance(m_mapid, m_difficulty))
-                return instance->extend == 1;
-            return false;
-        }
 
         InstanceTemplate const* GetTemplate();
         MapEntry const* GetMapEntry();
