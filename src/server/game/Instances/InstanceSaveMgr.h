@@ -49,7 +49,7 @@ class InstanceSave
            - any new instance is being generated
            - the first time a player bound to InstanceId logs in
            - when a group bound to the instance is loaded */
-        InstanceSave(uint16 MapId, uint32 InstanceId, Difficulty difficulty, time_t resetTime, bool canReset);
+        InstanceSave(uint16 MapId, uint32 InstanceId, Difficulty difficulty, time_t resetTime, bool canReset, time_t lastResetTime);
 
         /* Unloaded when m_playerList and m_groupList become empty
            or when the instance is reset */
@@ -73,6 +73,8 @@ class InstanceSave
            for raid/heroic instances this caches the global respawn time for the map */
         time_t GetResetTime() const { return m_resetTime; }
         void SetResetTime(time_t resetTime) { m_resetTime = resetTime; }
+        time_t GetLastResetTime() const { return m_lastResetTime; }
+        void SetLastResetTime(time_t lastResetTime) { m_lastResetTime = lastResetTime; }
         time_t GetResetTimeForDB();
         time_t GetDefaultResetTime();
         time_t GetNextResetTime();
@@ -80,7 +82,7 @@ class InstanceSave
         bool isExtend(Player* player)
         {
             if (InstancePlayerBind* instance = player->GetBoundInstance(m_mapid, m_difficulty))
-                return instance->extend;
+                return instance->extend == 1;
             return false;
         }
 
@@ -115,6 +117,7 @@ class InstanceSave
         PlayerListType m_playerList;
         GroupListType m_groupList;
         time_t m_resetTime;
+        time_t m_lastResetTime;
         uint32 m_instanceid;
         uint32 m_mapid;
         Difficulty m_difficulty;

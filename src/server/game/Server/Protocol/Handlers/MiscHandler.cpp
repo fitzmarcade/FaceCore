@@ -1744,7 +1744,9 @@ void WorldSession::HandleSetSavedInstanceExtend(WorldPacket & recv_data)
 
         if (InstancePlayerBind* instance = player->GetBoundInstance(map_id, Difficulty(difficulty)))
         {
-            player->BindToInstance(instance->save, instance->perm, false, extend == 1 ? true : false);
+            if (instance->extend > 1)
+                return;
+            player->BindToInstance(instance->save, instance->perm, false, extend);
         }
     }
 }

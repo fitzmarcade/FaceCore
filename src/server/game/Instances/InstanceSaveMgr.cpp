@@ -107,7 +107,16 @@ InstanceSave* InstanceSaveManager::AddInstanceSave(uint32 mapId, uint32 instance
 
     sLog->outDebug(LOG_FILTER_MAPS, "InstanceSaveManager::AddInstanceSave: mapid = %d, instanceid = %d", mapId, instanceId);
 
-    InstanceSave *save = new InstanceSave(mapId, instanceId, difficulty, resetTime, canReset);
+    time_t lastResetTime = 0;
+
+    QueryResult result = CharacterDatabase.PQuery("SELECT lastresettime FROM instance WHERE id = %u", instanceId);
+    if (result)
+    {
+        Field* fields = result->Fetch();
+        uint32 lastResetTime = fields[0].GetUInt32();
+    }
+
+    InstanceSave *save = new InstanceSave(mapId, instanceId, difficulty, resetTime, canReset, lastResetTime);
     if (!load)
         save->SaveToDB();
 
@@ -145,8 +154,8 @@ void InstanceSaveManager::RemoveInstanceSave(uint32 InstanceId)
     }
 }
 
-InstanceSave::InstanceSave(uint16 MapId, uint32 InstanceId, Difficulty difficulty, time_t resetTime, bool canReset)
-: m_resetTime(resetTime), m_instanceid(InstanceId), m_mapid(MapId),
+InstanceSave::InstanceSave(uint16 MapId, uint32 InstanceId, Difficulty difficulty, time_t resetTime, bool canReset, time_t lastResetTime)
+: m_resetTime(resetTime), m_lastResetTime(lastResetTime), m_instanceid(InstanceId), m_mapid(MapId),
   m_difficulty(difficulty), m_canReset(canReset)
 {
 }
@@ -256,6 +265,9 @@ void InstanceSaveManager::LoadInstances()
     // Delete expired instances (Instance related spawns are removed in the following cleanup queries)
     //CharacterDatabase.DirectExecute("DELETE i FROM instance i LEFT JOIN instance_reset ir ON mapid = map AND i.difficulty = ir.difficulty "
     //                                "WHERE (i.resettime > 0 AND i.resettime < UNIX_TIMESTAMP()) OR (ir.resettime IS NOT NULL AND ir.resettime < UNIX_TIMESTAMP())");
+
+    // Delete expired instances
+    //CharacterDatabase.DirectExecute("DELETE FROM instance i WHERE i.lastresettime > 0 AND i.lastresettime + INTERVAL 31 DAY < UNIX_TIMESTAMP()");
 
     // Delete invalid character_instance and group_instance references
     CharacterDatabase.DirectExecute("DELETE ci.* FROM character_instance AS ci LEFT JOIN characters AS c ON ci.guid = c.guid WHERE c.guid IS NULL");

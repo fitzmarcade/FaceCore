@@ -850,8 +850,8 @@ struct InstancePlayerBind
     /* permanent PlayerInstanceBinds are created in Raid/Heroic instances for players
        that aren't already permanently bound when they are inside when a boss is killed
        or when they enter an instance that the group leader is permanently bound to. */
-    bool extend;
-    InstancePlayerBind() : save(NULL), perm(false), extend(false) {}
+    uint8 extend;
+    InstancePlayerBind() : save(NULL), perm(false), extend(0) {}
 };
 
 enum DungeonStatusFlag
@@ -2411,7 +2411,7 @@ class Player : public Unit, public GridObject<Player>
         InstanceSave * GetInstanceSave(uint32 mapid, bool raid);
         void UnbindInstance(uint32 mapid, Difficulty difficulty, bool unload = false);
         void UnbindInstance(BoundInstancesMap::iterator &itr, Difficulty difficulty, bool unload = false);
-        InstancePlayerBind* BindToInstance(InstanceSave *save, bool permanent, bool load = false, bool extend = false);
+        InstancePlayerBind* BindToInstance(InstanceSave *save, bool permanent, bool load = false, uint8 extend = 0);
         void BindToInstance();
         void SetPendingBind(InstanceSave* save, uint32 bindTimer) { _pendingBind = save; _pendingBindTimer = bindTimer; }
         bool HasPendingBind() const { return _pendingBind != NULL; }
