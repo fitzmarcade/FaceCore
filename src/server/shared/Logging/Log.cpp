@@ -1045,7 +1045,6 @@ void Log::outChat(const char * str, ...)
     }
 }
 
-<<<<<<< HEAD
 void Log::outWarden(const char * str, ...)
 {
     if (!str)
@@ -1061,7 +1060,8 @@ void Log::outWarden(const char * str, ...)
         fflush(wardenDebugLogFile);
         va_end(ap);
     }
-=======
+}
+
 void Log::outErrorST(const char * str, ...)
 {
     va_list ap;
@@ -1072,5 +1072,4 @@ void Log::outErrorST(const char * str, ...)
 
     ACE_Stack_Trace st;
     outError("%s [Stacktrace: %s]", nnew_str, st.c_str());
->>>>>>> master
 }
