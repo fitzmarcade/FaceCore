@@ -735,17 +735,11 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
                 {
                     plMover->EnvironmentalDamage(DAMAGE_FALL_TO_VOID, GetPlayer()->GetMaxHealth());
                     // pl can be alive if GM/etc
+                    // change the death state to CORPSE to prevent the death timer from
+                    // starting in the next player update
                     if (!plMover->isAlive())
-                    {
-                        // change the death state to CORPSE to prevent the death timer from
-                        // starting in the next player update
                         plMover->KillPlayer();
-                        plMover->BuildPlayerRepop();
-                    }
                 }
-
-                // cancel the death timer here if started
-                plMover->RepopAtGraveyard();
             }
         }
         // movement anticheat
@@ -812,7 +806,7 @@ void WorldSession::HandleForceSpeedChangeAck(WorldPacket &recv_data)
 
     static char const* move_type_name[MAX_MOVE_TYPE] = {  "Walk", "Run", "RunBack", "Swim", "SwimBack", "TurnRate", "Flight", "FlightBack", "PitchRate" };
 
-    switch(opcode)
+    switch (opcode)
     {
         case CMSG_FORCE_WALK_SPEED_CHANGE_ACK:          move_type = MOVE_WALK;          force_move_type = MOVE_WALK;        break;
         case CMSG_FORCE_RUN_SPEED_CHANGE_ACK:           move_type = MOVE_RUN;           force_move_type = MOVE_RUN;         break;
@@ -908,8 +902,11 @@ void WorldSession::HandleMoveKnockBackAck(WorldPacket & recv_data)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_MOVE_KNOCK_BACK_ACK");
 
-    uint64 guid;                                            // guid - unused
+    uint64 guid;
     recv_data.readPackGUID(guid);
+
+    if (_player->m_mover->GetGUID() != guid)
+        return;
 
     recv_data.read_skip<uint32>();                          // unk
 
@@ -929,6 +926,18 @@ void WorldSession::HandleMoveKnockBackAck(WorldPacket & recv_data)
 
     const uint32 dt = (_player->m_anti_Last_VSpeed < 0) ? int(ceil(_player->m_anti_Last_VSpeed/-25)*1000) : int(ceil(_player->m_anti_Last_VSpeed/25)*1000);
     _player->m_anti_LastSpeedChangeTime = movementInfo.time + dt + 1000;
+
+    WorldPacket data(MSG_MOVE_KNOCK_BACK, 66);
+    data.appendPackGUID(guid);
+    _player->BuildMovementPacket(&data);
+
+    // knockback specific info
+    data << movementInfo.j_sinAngle;
+    data << movementInfo.j_cosAngle;
+    data << movementInfo.j_xyspeed;
+    data << movementInfo.j_zspeed;
+
+    _player->SendMessageToSet(&data, false);
 }
 
 void WorldSession::HandleMoveHoverAck(WorldPacket& recv_data)
