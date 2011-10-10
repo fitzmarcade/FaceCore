@@ -179,10 +179,10 @@ public:
         switch(pCreature->GetEntry())
         {
             case NPC_JAINA:
-                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Леди Джайна, мы готовы к следующей миссии!", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Lady Jaina, we are ready for next mission!", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
                 break;
             case NPC_SYLVANA:
-                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Леди Сильвана, мы готовы к следующей миссии!", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Lady Sylvanas, we are ready for next mission!", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
                 break;
         }
 
@@ -708,7 +708,7 @@ public:
         if(pCreature->isQuestGiver())
            pPlayer->PrepareQuestMenu( pCreature->GetGUID());
 
-        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Побежали!", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Lets go!", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
 
         pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
 
@@ -1051,11 +1051,6 @@ public:
                 case 6:
                     Fight = true;
 
-                    if(pLichKing)
-					{
-                        me->CastSpell(pLichKing, me->GetEntry() == NPC_JAINA_OUTRO ? SPELL_ICE_PRISON_VISUAL : SPELL_DARK_ARROW,true);
-						pLichKing->AttackStop();
-					}
                     JumpNextStep(2500);
                     break;
                 case 7:
@@ -1068,6 +1063,7 @@ public:
                     if(me->GetEntry() == NPC_JAINA_OUTRO)
                     {
                         me->RemoveAurasDueToSpell(SPELL_ICE_BARRIER);
+						me->RemoveAurasDueToSpell(SPELL_ICE_BARRIER);
                         DoScriptText(SAY_JAINA_AGGRO, me);
                     }
 
